@@ -114,3 +114,32 @@ test('model-util: persona is included in the payload', () => {
   const { stdin } = buildPayload('do the thing', { t: 'prim', name: 'text' }, 'be terse');
   ok(stdin.includes('be terse'), 'payload should carry the persona: ' + stdin);
 });
+
+test('interp: judge contract passes when the reviewer says PASS', async () => {
+  const m = { async complete({ prompt }) {
+    if (String(prompt).includes('Reply with PASS or FAIL')) return 'PASS. on-brand';
+    return { body: 'short' };
+  } };
+  const out = await exec(
+    `type P = { body: text }
+agent w { model: x }
+agent critic { model: x }
+flow f() -> P { w("go") -> d: P  ensure judge(critic, "on-brand?", d.body)  return d }`,
+    'f', [], { model: m });
+  eq(out, { body: 'short' });
+});
+
+test('interp: failing judge triggers repair and self-corrects', async () => {
+  const m = { async complete({ prompt }) {
+    const p = String(prompt);
+    if (p.includes('Reply with PASS or FAIL')) return p.includes('good copy') ? 'PASS. solid' : 'FAIL. too generic';
+    return { body: p.includes('previous output violated') ? 'good copy' : 'generic' };
+  } };
+  const out = await exec(
+    `type P = { body: text }
+agent w { model: x  retry: 3 }
+agent critic { model: x }
+flow f() -> P { w("go") -> d: P  ensure judge(critic, "specific?", d.body)  return d }`,
+    'f', [], { model: m });
+  eq(out, { body: 'good copy' });
+});

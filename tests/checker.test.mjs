@@ -61,3 +61,16 @@ test('checker: agent called outside a bind is rejected', () => {
 flow f(x: text) -> text { w(x)  return x }`);
   ok(e.some(x => /can only be called as a bind step/i.test(x)), JSON.stringify(e));
 });
+
+test('FENCE: judge in a contract is allowed with a declared agent', () => {
+  const e = errs(`agent w { model: x }
+agent critic { model: x }
+flow f(t: text) -> text { w("{t}") -> d: text  ensure judge(critic, "good?", d)  return d }`);
+  ok(e.length === 0, JSON.stringify(e));
+});
+
+test('FENCE: judge with a non-agent first arg is rejected', () => {
+  const e = errs(`agent w { model: x }
+flow f(t: text) -> text { w("{t}") -> d: text  ensure judge(d, "good?", d)  return d }`);
+  ok(e.some(x => /judge/i.test(x) && /agent/i.test(x)), JSON.stringify(e));
+});

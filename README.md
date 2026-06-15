@@ -79,7 +79,13 @@ Contracts live behind a **hard fence**: they may only use comparisons, boolean o
 
 ### What contracts can and cannot check
 
-They check **structure**: lengths, formats, enum membership, forbidden substrings, "a tool returned true", schema conformance. They do **not** check taste or truth ("is this prose good"). That stays a human gate. Weave does not pretend to verify judgment.
+They check **structure** for free: lengths, formats, enum membership, forbidden substrings, "a tool returned true", schema conformance. For **semantic** checks, a `judge` contract asks a reviewer model whether the output meets a rubric:
+
+```weave
+ensure judge(critic, "Specific and on-brand, not generic fluff.", draft.body)
+```
+
+If the judge fails, its reason is fed back to the writer and it rewrites, so the repair loop corrects for quality, not just format. A judge is a strong heuristic, not a proof, so a human `review` gate still backs anything that truly matters. Weave does not pretend a model reviewer equals truth.
 
 ---
 

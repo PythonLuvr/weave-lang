@@ -28,6 +28,7 @@ export async function run(program, entryName, args, opts = {}) {
   const toolImpl = opts.tools || {};
   const onEvent = opts.onEvent || (() => {});
   const cache = new Map();
+  let lastJudgeReason = null;
 
   function resolveType(t) {
     if (!t) return { t: 'prim', name: 'text' };
@@ -107,6 +108,7 @@ export async function run(program, entryName, args, opts = {}) {
         onEvent(`  soft  ${callee.name}(...) -> ${stmt.name}   [attempt ${attempt + 1}]`);
         let failed = null;
         for (const p of post) {
+          lastJudgeReason = null;
           const ok = truthy(await evalExpr(p.expr, scope));
           onEvent(`    ensure ${printExpr(p.expr)}  ${ok ? 'PASS' : 'FAIL'}`);
           if (!ok) { failed = p; break; }
@@ -114,6 +116,7 @@ export async function run(program, entryName, args, opts = {}) {
         if (!failed) break;
         if (attempt >= retry) throw new Halt(`ensure failed after ${attempt + 1} attempt(s): ${printExpr(failed.expr)}`);
         feedback = `${printExpr(failed.expr)} (was ${preview(scope.get(stmt.name))})`;
+        if (lastJudgeReason) feedback += ` | reviewer: ${lastJudgeReason}`;
         onEvent(`    repair -> feeding "${printExpr(failed.expr)}" back to ${callee.name}, retrying`);
         attempt++;
       }
@@ -183,10 +186,38 @@ export async function run(program, entryName, args, opts = {}) {
     throw new Halt(`bad operator ${node.op}`);
   }
 
+  // judge(agentRef, rubric, value): a reviewer model decides if value meets the
+  // rubric. Returns bool (fence-safe). The reason is stashed for repair feedback.
+  async function evalJudge(node, scope) {
+    const a0 = node.args[0];
+    const agentName = a0 && a0.kind === 'Ident' ? a0.name : null;
+    if (!agentName || !agents.has(agentName)) throw new Halt('judge(...) first argument must be a declared agent');
+    const rubric = String(await evalExpr(node.args[1], scope));
+    const value = await evalExpr(node.args[2], scope);
+    const valueStr = (value && typeof value === 'object') ? JSON.stringify(value) : String(value);
+    const agent = agents.get(agentName);
+    const prompt =
+      'You are a strict reviewer. Decide whether the CONTENT satisfies the RUBRIC.\n\n' +
+      `RUBRIC: ${rubric}\n\nCONTENT:\n${valueStr}\n\n` +
+      'Reply with PASS or FAIL on the first line, then one short sentence saying why.';
+    const key = `judge|${agentName}|${rubric}|${valueStr}`;
+    let resp;
+    if (cache.has(key)) resp = cache.get(key);
+    else {
+      resp = String(await model.complete({ agentName, agent: agent.fields, prompt, returnType: { t: 'prim', name: 'text' } }));
+      cache.set(key, resp);
+    }
+    const pass = /\bpass\b/i.test(resp) && !/\bfail\b/i.test(resp);
+    lastJudgeReason = resp.replace(/\s+/g, ' ').trim().slice(0, 240);
+    onEvent(`    judge ${agentName}: "${rubric.slice(0, 48)}${rubric.length > 48 ? '...' : ''}"  ${pass ? 'PASS' : 'FAIL'}`);
+    return pass;
+  }
+
   async function evalCall(node, scope) {
     const c = node.callee;
     if (c.kind !== 'Ident') throw new Halt('only named calls are supported');
     const n = c.name;
+    if (n === 'judge') return await evalJudge(node, scope);
     const args = [];
     for (const a of node.args) args.push(await evalExpr(a, scope));
     if (isBuiltin(n)) return BUILTIN_IMPL[n](...args);

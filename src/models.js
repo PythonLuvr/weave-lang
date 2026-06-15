@@ -25,6 +25,8 @@ const FACTS = [
 export function createMockModel() {
   return {
     async complete({ prompt, returnType }) {
+      // Judge prompts: the mock reviewer always approves so demos run clean.
+      if (String(prompt).includes('Reply with PASS or FAIL')) return 'PASS. Meets the rubric.';
       const repairing = String(prompt).includes('previous output violated');
       return synth(returnType, { repairing });
     },

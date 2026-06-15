@@ -225,9 +225,9 @@ This is the concrete answer to "what makes a language for AI worthy." The langua
 Be clear-eyed: contracts check **structural and relational** properties, not semantic truth.
 
 - Enforceable: length, format, membership in an enum, schema conformance, "a tool returned true," forbidden substrings, "every claim passed `fact_check`," references resolve, output parses.
-- Not enforceable by the language: "this prose is actually good," "this argument is sound," "the model's judgment was correct." No type system can prove that.
+- Not enforceable mechanically: "this prose is actually good," "this argument is sound." No type system can prove that. Judge contracts ([6.6](#66-judge-contracts-semantic-checks)) reach some of it with a model reviewer, but a judge is a strong heuristic, not a proof.
 
-The honest framing is that a large share of real-world guardrails are structural, and those we can enforce hard. The rest stays a human gate (`review`). Weave does not pretend to verify taste.
+The honest framing is that a large share of real-world guardrails are structural, and those we enforce hard. Semantic quality is checked by a judge where it helps, and a human gate (`review`) still backs anything that truly matters. Weave does not pretend a model reviewer is the same as truth.
 
 ### 6.5 The contract fence (a hard rule, drawn early)
 
@@ -242,6 +242,20 @@ A `require` or `ensure` expression may contain ONLY:
 It may NOT contain lambdas, closures, function definitions, arithmetic, assignment, or calls to anything outside that registry. Ever.
 
 Rationale: contracts must stay decidable, cheap, and obviously correct at a glance. The moment a contract can compute, it stops being a guardrail and becomes code that itself needs guarding. Predicates that need real logic live behind a `tool` or a built-in lint, where they are named, registered, and testable, not inline. The checker rejects any contract that breaches this fence (`src/checker.js`, `checkContract`).
+
+### 6.6 Judge contracts (semantic checks)
+
+Structural contracts cannot see whether copy is on-brand, specific, or sound. `judge` closes that gap without breaking the fence:
+
+```weave
+ensure judge(critic, "Specific and concrete, not generic fluff.", draft.body)
+```
+
+`judge(agentRef, rubric, value)` asks a reviewer agent whether the value meets the rubric and returns a bool, so it is still a registered predicate the fence allows. It is special in two ways: its first argument is an agent (not a value), and it is the one predicate that costs a model call and is non-deterministic.
+
+The payoff is the repair loop. When a judge fails on a soft step, the reviewer's reason is fed back to the producing agent ("you broke this: <reason>, fix it"), so the model self-corrects toward quality, not just format. A failing structural contract gets the model under the length limit; a failing judge gets it on-brand.
+
+Honest caveat: a judge is a model, so it is a strong heuristic, not a proof. Use a separate strict reviewer agent, keep rubrics narrow and binary, and keep a human `review` gate behind anything that truly matters.
 
 ---
 

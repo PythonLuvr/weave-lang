@@ -15,6 +15,10 @@ export const BUILTINS = {
   ends_with:    { params: ['text', 'text'], ret: 'bool' },
   no_em_dashes: { params: ['text'],         ret: 'bool' },
   no_hashtags:  { params: ['text'],         ret: 'bool' },
+  // judge(agentRef, rubric, value) -> bool. Special-cased in the interpreter
+  // and checker (first arg is an agent, not a value). It calls a reviewer model;
+  // it is the one predicate that costs a model call and is non-deterministic.
+  judge:        { params: ['agent', 'text', 'any'], ret: 'bool' },
 };
 
 // Runtime implementations, keyed by name.

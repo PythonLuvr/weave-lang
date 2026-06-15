@@ -1,0 +1,37 @@
+// judged-post.weave
+// A content flow with a JUDGE contract: structural checks (length, em dashes, CTA)
+// PLUS a semantic check. The critic agent decides whether the copy is specific
+// and on-brand. If it fails, the reviewer's reason is fed back to the writer and
+// it rewrites. The repair loop now corrects for quality, not just format.
+
+type Post = {
+  body: text
+  cta:  text
+}
+
+agent writer {
+  model:   claude
+  persona: "Brand copywriter. Concrete and specific. No em dashes. No hashtags. Always a CTA."
+  retry:   3
+}
+
+agent critic {
+  model:   claude
+  persona: "A blunt brand editor who rejects vague, generic marketing language."
+}
+
+flow judged_post(topic: text) -> Post {
+  require topic != ""
+
+  writer("Write a short marketing post about {topic}.") -> draft: Post
+
+  // structural contracts
+  ensure draft.body.length <= 280
+  ensure draft.cta != ""
+  ensure no_em_dashes(draft.body)
+
+  // semantic contract: the critic must approve, or the writer rewrites
+  ensure judge(critic, "Specific and concrete, not generic marketing fluff.", draft.body)
+
+  return draft
+}

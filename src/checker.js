@@ -99,6 +99,12 @@ export function check(program) {
         const c = node.callee;
         if (c.kind !== 'Ident') { errors.push(`${where}: only named calls are allowed`); return; }
         const n = c.name;
+        if (n === 'judge') {
+          const a0 = node.args[0];
+          if (!a0 || a0.kind !== 'Ident' || !agents.has(a0.name)) errors.push(`${where}: judge(...) first argument must be a declared agent`);
+          for (let i = 1; i < node.args.length; i++) checkExpr(node.args[i], scope, where);
+          return;
+        }
         const known = isBuiltin(n) || tools.has(n) || flows.has(n) || agents.has(n);
         if (!known) errors.push(`${where}: unknown function '${n}'`);
         if (agents.has(n) && !allowSoft) errors.push(`${where}: agent '${n}' can only be called as a bind step (use '${n}(...) -> name')`);
@@ -126,6 +132,12 @@ export function check(program) {
         const c = node.callee;
         if (c.kind !== 'Ident') { errors.push(`${where}: only named predicate calls allowed in contracts`); return; }
         const n = c.name;
+        if (n === 'judge') {
+          const a0 = node.args[0];
+          if (!a0 || a0.kind !== 'Ident' || !agents.has(a0.name)) errors.push(`${where}: judge(...) first argument must be a declared agent`);
+          for (let i = 1; i < node.args.length; i++) checkContract(node.args[i], scope, where);
+          return;
+        }
         if (!(isBuiltin(n) || tools.has(n))) errors.push(`${where}: a contract may only call built-in lints or tools, not '${n}' (contract fence)`);
         else if (!returnsBool(n)) errors.push(`${where}: contract call '${n}' must return bool (contract fence)`);
         node.args.forEach(a => checkContract(a, scope, where));
