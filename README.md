@@ -7,6 +7,12 @@
 <p align="center">A small, verifiable language for orchestrating AI agents.</p>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/weave-lang"><img src="https://img.shields.io/npm/v/weave-lang?color=2b8a3e&label=npm" alt="npm version"></a>
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license">
+  <img src="https://img.shields.io/badge/dependencies-0-success" alt="zero dependencies">
+</p>
+
+<p align="center">
   <a href="brand/weave-trailer.mp4"><img src="brand/trailer-poster.png" alt="Watch the 18-second intro" width="680"></a><br>
   <sub><a href="brand/weave-trailer.mp4">▶ watch the 18-second intro</a></sub>
 </p>
