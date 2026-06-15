@@ -74,3 +74,16 @@ test('FENCE: judge with a non-agent first arg is rejected', () => {
 flow f(t: text) -> text { w("{t}") -> d: text  ensure judge(d, "good?", d)  return d }`);
   ok(e.some(x => /judge/i.test(x) && /agent/i.test(x)), JSON.stringify(e));
 });
+
+test('checker: agent referencing an undeclared tool errors', () => {
+  const e = errs(`agent r { model: x  tools: [nope] }
+flow f(t: text) -> text { r("{t}") -> d: text  return d }`);
+  ok(e.some(x => /unknown tool 'nope'/.test(x)), JSON.stringify(e));
+});
+
+test('checker: agent referencing a declared tool is fine', () => {
+  const e = errs(`tool web_search(q: text) -> list<text>
+agent r { model: x  tools: [web_search] }
+flow f(t: text) -> text { r("{t}") -> d: text  return d }`);
+  ok(e.length === 0, JSON.stringify(e));
+});

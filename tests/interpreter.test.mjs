@@ -143,3 +143,20 @@ flow f() -> P { w("go") -> d: P  ensure judge(critic, "specific?", d.body)  retu
     'f', [], { model: m });
   eq(out, { body: 'good copy' });
 });
+
+test('interp: agent with tools runs a ReAct loop and calls the tool', async () => {
+  let searched = null;
+  const tools = { web_search: async (q) => { searched = q; return ['fact A', 'fact B']; } };
+  const m = { async complete({ prompt }) {
+    const p = String(prompt);
+    if (p.includes('CALL <tool>')) return p.includes('Result:') ? 'DONE' : 'CALL web_search ["quartz"]';
+    return p.includes('fact A') ? 'used the gathered facts' : 'no facts';
+  } };
+  const out = await exec(
+    `tool web_search(q: text) -> list<text>
+agent r { model: x  tools: [web_search] }
+flow f() -> text { r("research quartz") -> d: text  return d }`,
+    'f', [], { model: m, tools });
+  eq(searched, 'quartz');
+  eq(out, 'used the gathered facts');
+});

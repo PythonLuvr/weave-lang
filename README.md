@@ -71,6 +71,8 @@ flow topic_to_post(topic: text) -> Post {
 
 The `-> name` bindings are **orchestration**. The `require` / `ensure` lines are **verification**. Different jobs, one file.
 
+An agent that declares `tools` can actually **use** them: a soft call runs a ReAct loop (the model calls a tool, Weave runs the real tool and feeds the result back, repeat) before producing the typed answer. Works over the CLI backends, no API key. See [`examples/research.weave`](examples/research.weave).
+
 ### Contracts and the repair loop
 
 `require` is a precondition, `ensure` is a postcondition. When an `ensure` fails on a model's output, the runtime feeds the violated contract back to the agent ("you broke this, fix it") and retries up to the agent's `retry` budget. Guardrail and self-correction in one line.

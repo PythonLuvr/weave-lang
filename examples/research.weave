@@ -1,0 +1,26 @@
+// research.weave
+// Real tool-use. The researcher agent DECLARES a tool (web_search), so its soft
+// call runs a ReAct loop: the model calls web_search as many times as it needs,
+// Weave runs the real tool and feeds results back, then the agent answers.
+//
+// With --backend mock the model does not call tools (it just answers). With a
+// real backend (claude/gemini) it actually drives the tool.
+
+tool web_search(query: text) -> list<text>
+
+agent researcher {
+  model: claude
+  tools: [web_search]
+  retry: 2
+}
+
+flow research(topic: text) -> text {
+  require topic != ""
+
+  researcher("Research {topic} using web_search, then give the single most useful fact in one sentence.") -> finding: text
+
+  ensure finding != ""
+  ensure finding.length <= 200
+
+  return finding
+}

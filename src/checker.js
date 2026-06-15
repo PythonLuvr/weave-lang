@@ -45,6 +45,7 @@ export function check(program) {
   for (const d of program.decls) {
     if (d.kind === 'TypeDecl') checkTypeRefs(d.type, `type ${d.name}`);
     else if (d.kind === 'ToolDecl') { d.params.forEach(p => checkTypeRefs(p.type, `tool ${d.name}`)); checkTypeRefs(d.ret, `tool ${d.name}`); }
+    else if (d.kind === 'AgentDecl') { if (Array.isArray(d.fields.tools)) for (const t of d.fields.tools) if (!tools.has(t)) errors.push(`agent ${d.name}: unknown tool '${t}'`); }
     else if (d.kind === 'FlowDecl') checkFlow(d);
   }
 

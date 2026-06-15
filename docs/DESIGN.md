@@ -309,6 +309,12 @@ Agents and flows can carry a `budget:` in credits or dollars. Exceeding it halts
 
 The commitment that keeps the architecture open: persistent memory is retrieval-by-key, not context-accretion. That avoids the unbounded-context failure mode and keeps runs reproducible, because a `persistent` read is a content-addressable input like any other. v0 implements `none` only; `session` and `persistent` are specified here so the runtime is not built in a way that forecloses them.
 
+### 8.8 Tool-use (the ReAct loop)
+
+An agent that declares `tools: [...]` does not just carry them as metadata; on a soft call it can actually use them. Weave runs a ReAct loop: it offers the agent the tool signatures and a `CALL <tool> <json-args>` protocol, parses any tool call from the reply, runs the real Weave tool, feeds the result back, and loops until the agent stops. Then it makes the final typed completion using everything gathered.
+
+This is implemented over plain text completion, so it works with the CLI backends, no API key and no native function-calling protocol required. The trade-off is that it is a text convention rather than structured tool-calling: more portable, a little less rigid. Calls to tools the agent did not declare are ignored, and agents with no `tools` stay one-shot. See `examples/research.weave`.
+
 ---
 
 ## 9. Architecture and compilation

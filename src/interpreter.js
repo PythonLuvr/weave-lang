@@ -140,11 +140,57 @@ export async function run(program, entryName, args, opts = {}) {
     if (feedback) prompt += `\n\n[repair] previous output violated ${feedback}. Fix it.`;
     const name = callNode.callee.name;
     const agent = agents.get(name);
+
+    // If the agent declares tools, let it gather via a ReAct loop before answering.
+    const agentTools = Array.isArray(agent.fields.tools) ? agent.fields.tools : [];
+    if (agentTools.length) prompt = await runToolLoop(name, agent, agentTools, prompt);
+
     const key = `${name}|${prompt}|${JSON.stringify(expectedType)}`;
     if (cache.has(key)) { onEvent(`    cache hit (${name})`); return clone(cache.get(key)); }
     const value = await model.complete({ agentName: name, agent: agent.fields, prompt, returnType: expectedType });
     cache.set(key, value);
     return clone(value);
+  }
+
+  // ReAct loop: the model may emit `CALL <tool> <json-args>` lines; we run the
+  // real tool and feed the result back, looping until it stops. Returns the
+  // prompt augmented with everything gathered, for the final typed completion.
+  async function runToolLoop(name, agent, toolNames, userPrompt) {
+    const defs = toolNames.map(toolSignature).join('\n');
+    let transcript =
+      `${userPrompt}\n\nYou can call these tools to gather information first:\n${defs}\n\n` +
+      'To call one, reply with EXACTLY one line:\nCALL <tool> <json-array-of-args>\n' +
+      `for example: CALL ${toolNames[0]} ["..."]\n` +
+      'Call as many as you need, one per reply. When you have enough, reply with: DONE';
+    const gathered = [];
+    for (let i = 0; i < 6; i++) {
+      const reply = String(await model.complete({ agentName: name, agent: agent.fields, prompt: transcript, returnType: { t: 'prim', name: 'text' } }));
+      const call = parseToolCall(reply, toolNames);
+      if (!call) break;
+      let result;
+      try { result = await invokeTool(call.name, call.args); }
+      catch (e) { result = { error: String(e.message || e) }; }
+      onEvent(`    tool  ${call.name}(${call.args.map(preview).join(', ')})`);
+      gathered.push(`${call.name}(${call.args.map(a => JSON.stringify(a)).join(', ')}) -> ${JSON.stringify(result)}`);
+      transcript += `\n\n${reply}\nResult: ${JSON.stringify(result)}\n\nCall another tool, or reply DONE.`;
+    }
+    return gathered.length ? `${userPrompt}\n\nInformation gathered from tools:\n${gathered.join('\n')}` : userPrompt;
+  }
+
+  async function invokeTool(name, args) {
+    if (tools.has(name)) {
+      if (typeof toolImpl[name] !== 'function') throw new Error(`tool '${name}' has no implementation`);
+      return await toolImpl[name](...args);
+    }
+    if (isBuiltin(name)) return BUILTIN_IMPL[name](...args);
+    throw new Error(`unknown tool '${name}'`);
+  }
+
+  function toolSignature(n) {
+    const d = tools.get(n);
+    if (!d) return n;
+    const ps = (d.params || []).map(p => `${p.name}: ${typeStr(p.type)}`).join(', ');
+    return `${n}(${ps}) -> ${typeStr(d.ret)}`;
   }
 
   async function evalExpr(node, scope) {
@@ -260,6 +306,28 @@ export async function run(program, entryName, args, opts = {}) {
 // ---- pure helpers ----
 
 function truthy(v) { return v === true; }
+
+function typeStr(t) {
+  if (!t) return 'any';
+  if (t.t === 'prim') return t.name;
+  if (t.t === 'named') return t.name;
+  if (t.t === 'list') return `list<${typeStr(t.elem)}>`;
+  if (t.t === 'record') return '{ ... }';
+  if (t.t === 'enum') return t.members.map(m => JSON.stringify(m)).join(' | ');
+  return 'any';
+}
+
+// Parse a `CALL <tool> <json-array>` line from a model reply. Returns null if
+// there is no valid call or the tool is not one the agent declared.
+function parseToolCall(reply, toolNames) {
+  const m = String(reply).match(/CALL\s+([A-Za-z_]\w*)\s+(\[[\s\S]*?\])/);
+  if (!m) return null;
+  if (toolNames && !toolNames.includes(m[1])) return null;
+  let args;
+  try { args = JSON.parse(m[2]); } catch { args = []; }
+  if (!Array.isArray(args)) args = [args];
+  return { name: m[1], args };
+}
 
 function clone(v) {
   if (v == null || typeof v !== 'object') return v;
