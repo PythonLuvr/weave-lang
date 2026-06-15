@@ -160,3 +160,58 @@ flow f() -> text { r("research quartz") -> d: text  return d }`,
   eq(searched, 'quartz');
   eq(out, 'used the gathered facts');
 });
+
+test('interp: review auto-approves with no reviewer wired', async () => {
+  const m = { async complete() { return 'x'; } };
+  const out = await exec(
+    `agent w { model: x }
+flow f() -> text { w("hi") -> d: text  review d -> ok: text  return ok }`,
+    'f', [], { model: m });
+  eq(out, 'x');
+});
+
+test('interp: review can reject and halt', async () => {
+  const m = { async complete() { return 'x'; } };
+  await throws(() => exec(
+    `agent w { model: x }
+flow f() -> text { w("hi") -> d: text  review d -> ok: text  return ok }`,
+    'f', [], { model: m, onReview: () => ({ approved: false }) }));
+});
+
+test('interp: parallel runs binds and captures all results', async () => {
+  const m = { async complete({ prompt }) { return String(prompt).includes('A') ? 'aa' : 'bb'; } };
+  const out = await exec(
+    `agent w { model: x }
+flow f() -> text { parallel { w("A") -> a: text  w("B") -> b: text }  return a }`,
+    'f', [], { model: m });
+  eq(out, 'aa');
+});
+
+test('interp: agent budget halts after its call limit', async () => {
+  const m = { async complete() { return { body: 'x' }; } };
+  await throws(() => exec(
+    `type P = { body: text }
+agent w { model: x  budget: 1 }
+flow f() -> P { w("1") -> a: P  w("2") -> b: P  return b }`,
+    'f', [], { model: m }));
+});
+
+test('interp: session memory feeds earlier exchanges back', async () => {
+  let secondSent = '';
+  let n = 0;
+  const m = { async complete({ prompt }) { n++; if (n === 2) secondSent = String(prompt); return 'r' + n; } };
+  await exec(
+    `agent w { model: x  memory: session }
+flow f() -> text { w("first question") -> a: text  w("second question") -> b: text  return b }`,
+    'f', [], { model: m });
+  ok(secondSent.includes('Earlier in this session') && secondSent.includes('first question'), secondSent);
+});
+
+test('interp: remember then recall round-trips via the store', async () => {
+  const store = new Map();
+  const m = { async complete() { return 'ok'; } };
+  const out = await exec(
+    `flow f() -> text { remember("k", "saved value") -> w: bool  recall("k") -> v: text  return v }`,
+    'f', [], { model: m, memory: store });
+  eq(out, 'saved value');
+});

@@ -19,6 +19,10 @@ export const BUILTINS = {
   // and checker (first arg is an agent, not a value). It calls a reviewer model;
   // it is the one predicate that costs a model call and is non-deterministic.
   judge:        { params: ['agent', 'text', 'any'], ret: 'bool' },
+  // persistent memory, retrieval by key. Special-cased in the interpreter
+  // (they touch the host store), so there is no pure BUILTIN_IMPL entry.
+  recall:       { params: ['text'],          ret: 'text' },
+  remember:     { params: ['text', 'any'],   ret: 'bool' },
 };
 
 // Runtime implementations, keyed by name.

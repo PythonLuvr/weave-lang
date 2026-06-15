@@ -2,13 +2,12 @@
 // Recursive-descent parser. Tokens in, AST out.
 // Implements the v0 subset of the grammar in docs/DESIGN.md Appendix A:
 // type / tool / agent / flow declarations, and the flow statement set
-// (require, ensure, for, if, return, bind, expr). parallel and review
-// are intentionally deferred to v1.
+// (require, ensure, for, if, return, review, parallel, bind, expr).
 
 import { tokenize } from './lexer.js';
 
 const PRIMITIVES = new Set(['text', 'int', 'num', 'bool']);
-const STMT_KEYWORDS = new Set(['require', 'ensure', 'for', 'if', 'return']);
+const STMT_KEYWORDS = new Set(['require', 'ensure', 'for', 'if', 'return', 'review', 'parallel']);
 
 export function parse(src) {
   const tokens = tokenize(src);
@@ -177,6 +176,8 @@ export function parse(src) {
       if (kw === 'return') { next(); return { kind: 'Return', expr: parseExpr() }; }
       if (kw === 'for') return parseFor();
       if (kw === 'if') return parseIf();
+      if (kw === 'review') return parseReview();
+      if (kw === 'parallel') return parseParallel();
     }
     // otherwise: an expression, possibly a bind ( call -> name )
     const expr = parseExpr();
@@ -196,6 +197,32 @@ export function parse(src) {
     while (!isOp('}')) stmts.push(parseStmt());
     eatOp('}');
     return stmts;
+  }
+
+  function parseReview() {
+    next(); // 'review'
+    const value = parseExpr();
+    eatOp('->');
+    const name = eatIdent();
+    let type = null;
+    if (isOp(':')) { next(); type = parseType(); }
+    return { kind: 'Review', value, name, type };
+  }
+
+  function parseParallel() {
+    next(); // 'parallel'
+    eatOp('{');
+    const binds = [];
+    while (!isOp('}')) {
+      const call = parseExpr();
+      eatOp('->');
+      const name = eatIdent();
+      let type = null;
+      if (isOp(':')) { next(); type = parseType(); }
+      binds.push({ kind: 'Bind', call, name, type });
+    }
+    eatOp('}');
+    return { kind: 'Parallel', binds };
   }
 
   function parseFor() {

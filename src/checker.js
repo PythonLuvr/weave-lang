@@ -73,6 +73,16 @@ export function check(program) {
           checkExpr(s.cond, scope, where);
           walk(s.then, scope);
           if (s.alt) walk(s.alt, scope);
+        } else if (s.kind === 'Review') {
+          checkExpr(s.value, scope, where);
+          if (s.type) checkTypeRefs(s.type, `${where} review ${s.name}`);
+          scope.add(s.name);
+        } else if (s.kind === 'Parallel') {
+          for (const b of s.binds) {
+            checkExpr(b.call, scope, where, true);
+            if (b.type) checkTypeRefs(b.type, `${where} bind ${b.name}`);
+            scope.add(b.name);
+          }
         } else if (s.kind === 'Return') {
           hasReturn = true;
           checkExpr(s.expr, scope, where);

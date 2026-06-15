@@ -115,6 +115,15 @@ No install step. The language core has no runtime dependencies.
 
 ---
 
+## More in the language
+
+- **Tool-use** ([`examples/research.weave`](examples/research.weave)): an agent with `tools` calls them in a ReAct loop before it answers.
+- **Judge contracts** ([`examples/judged-post.weave`](examples/judged-post.weave)): `judge(critic, rubric, value)` checks semantic quality and self-corrects via the repair loop.
+- **`parallel`** ([`examples/variants.weave`](examples/variants.weave)): run independent steps at once, generate variants, fan out.
+- **`review`**: a human approval gate that pauses the flow (interactive on a terminal, auto-approves when non-interactive).
+- **Budgets**: `agent { budget: N }` caps an agent's model calls; `--budget N` caps the whole flow.
+- **Memory**: `agent { memory: session }` carries earlier turns this run; `remember(key, value)` / `recall(key)` persist across runs (retrieval by key).
+
 ## Why "trust, not fluency"
 
 This project exists because of a specific objection: a language for AI cannot help an AI *write* more fluently, because the AI has never seen it. The whole design answers that objection a different way, it is small enough to teach in-context, constrained so invalid programs cannot be expressed, and verifiable so wrong output is caught the instant it happens. If that framing ever stops holding, the docs say to stop, not to keep selling it. See [docs/DESIGN.md](docs/DESIGN.md).

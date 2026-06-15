@@ -175,7 +175,7 @@ parallel {
 }
 ```
 
-`parallel` is a barrier: it runs the branches concurrently and waits for all of them. Independent steps outside a `parallel` block may also be scheduled concurrently by the runtime based on the data-dependency graph (see [Execution model](#8-execution-model)). (`parallel` is specified here but deferred past v0.)
+`parallel` is a barrier: it runs the branches concurrently and waits for all of them. Independent steps outside a `parallel` block may also be scheduled concurrently by the runtime based on the data-dependency graph (see [Execution model](#8-execution-model)). (`parallel` is implemented; the implicit DAG auto-scheduler is still v1.)
 
 ### 5.6 Human in the loop
 
@@ -190,7 +190,7 @@ flow post_with_approval(topic: Topic) -> text {
 }
 ```
 
-`review` suspends the flow, persists state, and resumes on approval. On rejection it aborts the flow. This maps onto a human approval gate in any review-driven workflow. (`review` is specified here but deferred past v0.)
+`review` suspends the flow, persists state, and resumes on approval. On rejection it aborts the flow. This maps onto a human approval gate in any review-driven workflow. (`review` is implemented; the host decides approval, and the CLI prompts on a TTY, auto-approving when non-interactive.)
 
 ---
 
@@ -281,7 +281,7 @@ A flow's control flow, data dependencies, and contracts are fully deterministic.
 
 ### 8.2 Scheduling
 
-Each `->` binding is a node. Edges are data dependencies (a step that reads `facts` depends on the step that produced `facts`). The runtime builds the DAG and runs independent nodes concurrently up to a concurrency cap. `parallel { }` is an explicit barrier for when you want to force and then join concurrency. (v0 runs sequentially; the DAG scheduler is v1.)
+Each `->` binding is a node. Edges are data dependencies (a step that reads `facts` depends on the step that produced `facts`). The runtime builds the DAG and runs independent nodes concurrently up to a concurrency cap. `parallel { }` is an explicit barrier for when you want to force and then join concurrency. (`parallel { }` is implemented and runs its binds concurrently; the implicit DAG auto-scheduler is v1.)
 
 ### 8.3 Retries and the repair loop
 
@@ -307,7 +307,7 @@ Agents and flows can carry a `budget:` in credits or dollars. Exceeding it halts
 - `session`: a per-flow-run transcript scoped to (run, agent). The agent's own prior calls within the same run are visible to it; nothing leaks across runs or across agents. Created when the run starts, discarded when it ends.
 - `persistent`: a named store, host-backed (SQLite or a file), surviving across runs, keyed by (agent, key). It is read and written explicitly via built-ins (`mem.get(key)` / `mem.put(key, value)`), NOT auto-injected wholesale into the prompt. The agent pulls what it needs by key.
 
-The commitment that keeps the architecture open: persistent memory is retrieval-by-key, not context-accretion. That avoids the unbounded-context failure mode and keeps runs reproducible, because a `persistent` read is a content-addressable input like any other. v0 implements `none` only; `session` and `persistent` are specified here so the runtime is not built in a way that forecloses them.
+The commitment that keeps the architecture open: persistent memory is retrieval-by-key, not context-accretion. That avoids the unbounded-context failure mode and keeps runs reproducible, because a `persistent` read is a content-addressable input like any other. `none` and `session` are implemented; cross-run persistence ships as the `recall` / `remember` built-ins (retrieval-by-key), matching the commitment above.
 
 ### 8.8 Tool-use (the ReAct loop)
 
@@ -397,14 +397,16 @@ node src/cli.js check examples/demo.weave
 node src/cli.js run   examples/demo.weave --topic "granite countertops"
 ```
 
-Deferred to v1+:
+Shipped since the first cut:
 
-- A real model backend (Claude / Gemini) behind a cost gate.
+- Real model backends (Claude / Gemini via their CLIs, no API key).
+- Judge contracts (semantic checks), tool-use (ReAct loop), `parallel`, `review` gates, budgets, and memory (`session` plus `recall` / `remember`).
+
+Still deferred:
+
 - Codegen to standalone TS (v0 interprets directly).
 - Constrained-decoding grammar export and `weave teach`.
-- `review` human gates with suspend/resume, and `parallel`.
-- The eval harness and budgets.
-- Cross-run persistent caching and memory.
+- The eval harness, an LSP, and an npm publish.
 
 ---
 
@@ -504,4 +506,4 @@ Prompt templates inside soft calls use `{name}` interpolation against in-scope b
 ## Appendix B: example programs
 
 - `examples/demo.weave` runs in v0: `node src/cli.js run examples/demo.weave --topic "..."`.
-- `examples/social_post.weave` is illustrative. It uses features specified but deferred past v0 (such as `review`), so it reads as the full language rather than the v0 subset.
+- `examples/social_post.weave` layers a `review` gate on the demo flow. `examples/research.weave` (tool-use), `examples/judged-post.weave` (judge), and `examples/variants.weave` (parallel + review) show the rest.

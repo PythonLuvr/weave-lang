@@ -1,0 +1,33 @@
+// variants.weave
+// Shows parallel generation, a budget, and a human review gate.
+// Two variants are written at the same time, both must be non-empty, then a
+// human approves one before it ships (auto-approves when run non-interactively).
+
+type Post = {
+  headline: text
+  body:     text
+}
+
+agent writer {
+  model:   claude
+  persona: "Punchy brand copywriter. No em dashes. No hashtags."
+  budget:  4
+}
+
+flow variants(topic: text) -> Post {
+  require topic != ""
+
+  // generate two takes at once
+  parallel {
+    writer("Write variant A: a bold take on {topic}") -> a: Post
+    writer("Write variant B: a calm take on {topic}") -> b: Post
+  }
+
+  ensure a.body != ""
+  ensure b.body != ""
+
+  // a human picks before it ships
+  review a -> chosen: Post
+
+  return chosen
+}

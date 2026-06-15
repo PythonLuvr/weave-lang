@@ -7,7 +7,8 @@
 // Flags map to flow parameters by name, e.g. --topic "granite countertops".
 // Use --entry to pick a flow when a file declares more than one.
 
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { createInterface } from 'readline';
 import { parse } from './parser.js';
 import { check } from './checker.js';
 import { run } from './interpreter.js';
@@ -27,7 +28,7 @@ for (let i = 0; i < rest.length; i++) {
 if (!cmd || !file || (cmd !== 'run' && cmd !== 'check')) {
   console.log('usage:');
   console.log('  weave check <file.weave>');
-  console.log('  weave run   <file.weave> [--backend mock|gemini|claude] [--tools module.mjs] [--entry flowName] [--param value ...]');
+  console.log('  weave run   <file.weave> [--backend mock|gemini|claude] [--tools module.mjs] [--budget N] [--entry flowName] [--param value ...]');
   process.exit(1);
 }
 
@@ -80,15 +81,33 @@ const toolsMod = flags.tools
   : await import('./tools.js');
 const tools = toolsMod.createTools();
 
+// persistent memory store, file-backed across runs (recall / remember)
+const memFile = 'weave-memory.json';
+const memStore = new Map(existsSync(memFile) ? Object.entries(JSON.parse(readFileSync(memFile, 'utf8'))) : []);
+
+// human review gate: prompt on a TTY, auto-approve when non-interactive
+async function onReview({ value, name }) {
+  const view = typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
+  console.log(`\n[review: ${name}]\n${view}`);
+  if (!process.stdin.isTTY) { console.log('(non-interactive: auto-approved)'); return { approved: true }; }
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const ans = await new Promise((res) => rl.question('approve? [y/n] ', (a) => { rl.close(); res(a); }));
+  return { approved: /^y/i.test(String(ans).trim()) };
+}
+
 try {
   const out = await run(program, entryName, args, {
     model,
     tools,
+    budget: flags.budget,
+    memory: memStore,
+    onReview,
     onEvent: (s) => console.log(s),
   });
   console.log('-'.repeat(60));
   console.log('RESULT:');
   console.log(JSON.stringify(out, null, 2));
+  if (memStore.size) writeFileSync(memFile, JSON.stringify(Object.fromEntries(memStore), null, 2));
 } catch (e) {
   console.log('-'.repeat(60));
   console.error('HALTED: ' + String(e.message || e));

@@ -29,6 +29,31 @@ export async function run(program, entryName, args, opts = {}) {
   const onEvent = opts.onEvent || (() => {});
   const cache = new Map();
   let lastJudgeReason = null;
+  const sessionMem = {};                       // agentName -> [exchanges] (memory: session)
+  const memStore = opts.memory || new Map();   // persistent key-value (recall / remember)
+  const callsByAgent = {};
+  let totalCalls = 0;
+
+  // Budgets: each real model call is charged. An agent's `budget:` caps its own
+  // calls; opts.budget caps the whole flow. Exceeding either halts.
+  function chargeCall(name) {
+    callsByAgent[name] = (callsByAgent[name] || 0) + 1;
+    totalCalls++;
+    const agent = agents.get(name);
+    const b = agent && Number(agent.fields.budget);
+    if (b && callsByAgent[name] > b) throw new Halt(`agent '${name}' exceeded its budget of ${b} model call(s)`);
+    if (opts.budget && totalCalls > Number(opts.budget)) throw new Halt(`flow exceeded its budget of ${opts.budget} model call(s)`);
+  }
+
+  // Human approval gate. opts.onReview decides; with none wired, auto-approve.
+  async function reviewGate(value, name) {
+    if (typeof opts.onReview === 'function') {
+      const verdict = await opts.onReview({ value, name });
+      if (verdict && verdict.approved === false) throw new Halt(`rejected at review '${name}'`);
+      return (verdict && 'value' in verdict) ? verdict.value : value;
+    }
+    return value;
+  }
 
   function resolveType(t) {
     if (!t) return { t: 'prim', name: 'text' };
@@ -72,6 +97,21 @@ export async function run(program, entryName, args, opts = {}) {
         const c = truthy(await evalExpr(s.cond, scope));
         const r = await execStmts(c ? s.then : (s.alt || []), scope);
         if (r) return r;
+      } else if (s.kind === 'Review') {
+        const v = await evalExpr(s.value, scope);
+        onEvent(`  review ${printExpr(s.value)} -> ${s.name}`);
+        scope.set(s.name, await reviewGate(v, s.name));
+      } else if (s.kind === 'Parallel') {
+        onEvent(`  parallel { ${s.binds.length} step(s) }`);
+        await Promise.all(s.binds.map(async (b) => {
+          const callee = b.call.callee;
+          const isSoft = callee.kind === 'Ident' && agents.has(callee.name);
+          const value = isSoft
+            ? await evalSoftCall(b.call, scope, resolveType(b.type || { t: 'prim', name: 'text' }), null)
+            : await evalExpr(b.call, scope);
+          scope.set(b.name, value);
+          onEvent(`    parallel ${callee.name || ''} -> ${b.name}`);
+        }));
       } else if (s.kind === 'ExprStmt') {
         await evalExpr(s.expr, scope);
       } else if (s.kind === 'Bind') {
@@ -145,10 +185,22 @@ export async function run(program, entryName, args, opts = {}) {
     const agentTools = Array.isArray(agent.fields.tools) ? agent.fields.tools : [];
     if (agentTools.length) prompt = await runToolLoop(name, agent, agentTools, prompt);
 
-    const key = `${name}|${prompt}|${JSON.stringify(expectedType)}`;
+    // memory: session -> prepend this agent's earlier exchanges from this run.
+    let sent = prompt;
+    const useSession = agent.fields.memory === 'session';
+    if (useSession && sessionMem[name] && sessionMem[name].length) {
+      sent = `Earlier in this session:\n${sessionMem[name].join('\n\n')}\n\n----\n\n${prompt}`;
+    }
+
+    const key = `${name}|${sent}|${JSON.stringify(expectedType)}`;
     if (cache.has(key)) { onEvent(`    cache hit (${name})`); return clone(cache.get(key)); }
-    const value = await model.complete({ agentName: name, agent: agent.fields, prompt, returnType: expectedType });
+    chargeCall(name);
+    const value = await model.complete({ agentName: name, agent: agent.fields, prompt: sent, returnType: expectedType });
     cache.set(key, value);
+    if (useSession) {
+      const v = typeof value === 'object' ? JSON.stringify(value) : String(value);
+      (sessionMem[name] = sessionMem[name] || []).push(`Q: ${prompt.slice(0, 200)}\nA: ${v.slice(0, 300)}`);
+    }
     return clone(value);
   }
 
@@ -164,6 +216,7 @@ export async function run(program, entryName, args, opts = {}) {
       'Call as many as you need, one per reply. When you have enough, reply with: DONE';
     const gathered = [];
     for (let i = 0; i < 6; i++) {
+      chargeCall(name);
       const reply = String(await model.complete({ agentName: name, agent: agent.fields, prompt: transcript, returnType: { t: 'prim', name: 'text' } }));
       const call = parseToolCall(reply, toolNames);
       if (!call) break;
@@ -250,6 +303,7 @@ export async function run(program, entryName, args, opts = {}) {
     let resp;
     if (cache.has(key)) resp = cache.get(key);
     else {
+      chargeCall(agentName);
       resp = String(await model.complete({ agentName, agent: agent.fields, prompt, returnType: { t: 'prim', name: 'text' } }));
       cache.set(key, resp);
     }
@@ -266,6 +320,8 @@ export async function run(program, entryName, args, opts = {}) {
     if (n === 'judge') return await evalJudge(node, scope);
     const args = [];
     for (const a of node.args) args.push(await evalExpr(a, scope));
+    if (n === 'recall') { const k = String(args[0]); return memStore.has(k) ? memStore.get(k) : ''; }
+    if (n === 'remember') { memStore.set(String(args[0]), args[1]); onEvent(`    remember ${JSON.stringify(String(args[0]))}`); return true; }
     if (isBuiltin(n)) return BUILTIN_IMPL[n](...args);
     if (tools.has(n)) {
       onEvent(`    tool  ${n}(${args.map(preview).join(', ')})`);
