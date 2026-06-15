@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weave brand: interlaced chevrons</title>
+<link rel="icon" href="favicon.svg">
+<style>
+  :root{
+    --indigo:#5B4BE3; --coral:#FF7E6B; --ink:#161235; --mist:#F7F6FD; --line:#E7E3F7;
+    --font:'Poppins','Century Gothic','Futura','Segoe UI',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);color:var(--ink);background:var(--mist);line-height:1.5}
+  header{padding:56px 40px 30px;border-bottom:1px solid var(--line)}
+  h1{margin:0;font-size:40px;letter-spacing:-1px}
+  .sub{margin:8px 0 0;color:#6A6588;max-width:680px}
+  main{padding:40px;max-width:1040px;margin:0 auto}
+  h2{font-size:14px;text-transform:uppercase;letter-spacing:2px;color:#8A85A8;margin:48px 0 18px}
+  .hero{display:flex;flex-direction:column;gap:14px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:20px;padding:34px;display:flex;align-items:center;justify-content:center}
+  .panel.dark{background:var(--ink);border-color:#2C2756}
+  .panel img{max-width:100%}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px;text-align:center}
+  .card.dark{background:var(--ink);border-color:#2C2756;color:#C7C2E6}
+  .card img{width:104px;height:104px;display:block;margin:0 auto 12px}
+  .card .name{font-weight:600;font-size:14px}
+  .card .desc{font-size:12px;color:#7A7596;margin-top:3px}
+  .card.dark .desc{color:#8E88B8}
+  .icons{display:flex;gap:22px;flex-wrap:wrap;align-items:center}
+  .iconwrap{text-align:center}
+  .iconwrap img{display:block;border-radius:0}
+  .b96{width:96px;height:96px}.b64{width:64px;height:64px}.b48{width:48px;height:48px}.b32{width:32px;height:32px}.b16{width:16px;height:16px}
+  .row{display:flex;gap:14px;align-items:flex-end;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 22px}
+  .cap{font-size:12px;color:#8A85A8;margin-top:6px;text-align:center}
+  .swatches{display:flex;flex-wrap:wrap;gap:14px}
+  .sw{border:1px solid var(--line);border-radius:14px;overflow:hidden;width:150px;background:#fff}
+  .sw .col{height:74px}
+  .sw .meta{padding:10px 12px;font-size:12.5px}
+  .sw .meta b{display:block;font-size:13px}
+  .sw .meta code{color:#7A7596}
+  .note{font-size:13px;color:#6A6588;max-width:740px;margin-top:12px}
+  .files{font-size:12.5px;color:#7A7596;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin-top:14px}
+  .files code{color:var(--indigo)}
+</style>
+</head>
+<body>
+<header>
+  <h1>weave</h1>
+  <p class="sub">Final direction: interlaced chevrons. Two threads, indigo (warp) and coral (weft), woven over and under. Reads as a weave, and as two agents braided into one flow. All vector SVG.</p>
+</header>
+<main>
+
+  <h2>Lockup</h2>
+  <div class="hero">
+    <div class="panel"><img src="weave-lockup.svg" alt="weave lockup" style="height:104px"></div>
+    <div class="panel dark"><img src="weave-lockup.svg" alt="weave lockup on dark" style="height:104px"></div>
+  </div>
+
+  <h2>The mark</h2>
+  <div class="grid">
+    <div class="card"><img src="weave-mark.svg" alt="mark"><div class="name">Primary</div><div class="desc">Indigo + coral, woven</div></div>
+    <div class="card"><img src="weave-mark-mono.svg" alt="mono"><div class="name">Single color</div><div class="desc">Over-under shown by gaps</div></div>
+    <div class="card dark"><img src="weave-mark.svg" alt="mark on dark"><div class="name">On dark</div><div class="desc">Same mark, ink ground</div></div>
+  </div>
+
+  <h2>App icon</h2>
+  <div class="icons">
+    <div class="iconwrap"><img class="b96" src="weave-icon-dark.svg" alt="dark icon"><div class="cap">dark 96</div></div>
+    <div class="iconwrap"><img class="b96" src="weave-icon-light.svg" alt="light icon"><div class="cap">light 96</div></div>
+    <div class="row">
+      <img class="b48" src="weave-icon-dark.svg" alt="">
+      <img class="b32" src="weave-icon-dark.svg" alt="">
+      <img class="b16" src="weave-icon-dark.svg" alt="">
+    </div>
+    <div class="row">
+      <img class="b48" src="favicon.svg" alt="">
+      <img class="b32" src="favicon.svg" alt="">
+      <img class="b16" src="favicon.svg" alt="">
+    </div>
+  </div>
+  <p class="cap">App icons and the bare favicon at 48 / 32 / 16. The mark stays legible down to 16px.</p>
+
+  <h2>Wordmark</h2>
+  <div class="panel" style="justify-content:flex-start"><img src="weave-wordmark.svg" alt="weave wordmark" style="height:80px"></div>
+  <p class="note">Set in a geometric sans (Poppins / Century Gothic fallback) so it renders here. Final step is to lock one licensed font and convert it to outlines so the wordmark is pixel-identical everywhere and carries no font dependency.</p>
+
+  <h2>Palette</h2>
+  <div class="swatches">
+    <div class="sw"><div class="col" style="background:#5B4BE3"></div><div class="meta"><b>Indigo</b><code>#5B4BE3</code> warp</div></div>
+    <div class="sw"><div class="col" style="background:#FF7E6B"></div><div class="meta"><b>Coral</b><code>#FF7E6B</code> weft</div></div>
+    <div class="sw"><div class="col" style="background:#161235"></div><div class="meta"><b>Ink</b><code>#161235</code> text / dark</div></div>
+    <div class="sw"><div class="col" style="background:#F7F6FD;border-bottom:1px solid #E7E3F7"></div><div class="meta"><b>Mist</b><code>#F7F6FD</code> light bg</div></div>
+  </div>
+
+  <div class="files">
+    Assets in <code>weave/brand/</code>: weave-mark.svg, weave-mark-mono.svg, weave-icon-dark.svg, weave-icon-light.svg, weave-lockup.svg, weave-wordmark.svg, favicon.svg.
+  </div>
+
+</main>
+</body>
+</html>

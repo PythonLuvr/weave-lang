@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Weave mark">
+  <title>Weave mark (interlaced chevrons)</title>
+  <defs>
+    <clipPath id="weave-cross-right"><circle cx="65" cy="50" r="16"/></clipPath>
+  </defs>
+  <g fill="none" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 72 L50 28 L80 72" stroke="#FF7E6B"/>
+    <path d="M20 28 L50 72 L80 28" stroke="#5B4BE3"/>
+    <path d="M20 72 L50 28 L80 72" stroke="#FF7E6B" clip-path="url(#weave-cross-right)"/>
+  </g>
+</svg>

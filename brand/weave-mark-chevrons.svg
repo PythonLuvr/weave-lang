@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Weave interlaced chevrons mark">
+  <title>Weave interlaced chevrons (two threads)</title>
+  <defs>
+    <clipPath id="cross-right"><circle cx="65" cy="50" r="16"/></clipPath>
+  </defs>
+  <g fill="none" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
+    <!-- thread B (coral), underneath -->
+    <path d="M20 72 L50 28 L80 72" stroke="#FF7E6B"/>
+    <!-- thread A (indigo), over -->
+    <path d="M20 28 L50 72 L80 28" stroke="#5B4BE3"/>
+    <!-- reveal coral over indigo at the right crossing: the weave -->
+    <path d="M20 72 L50 28 L80 72" stroke="#FF7E6B" clip-path="url(#cross-right)"/>
+  </g>
+</svg>

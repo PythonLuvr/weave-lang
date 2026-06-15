@@ -1,0 +1,55 @@
+// social_post.weave
+// A brand-true social post pipeline with fact-checking and structural guardrails.
+// Demonstrates: tools, two agents, a soft call, a verification loop, contracts.
+
+type Post = {
+  body: text
+  cta:  text
+}
+
+tool web_search(query: text)  -> list<text>
+tool fact_check(claim: text)  -> bool
+tool publish(post: Post)      -> text          // returns the published URL
+
+agent researcher {
+  model:  gemini-flash
+  tools:  [web_search]
+  memory: session
+  retry:  2
+}
+
+agent writer {
+  model:   claude
+  persona: "Brand-true social copywriter. No em dashes. No hashtags. Always a CTA."
+  retry:   3
+}
+
+flow topic_to_post(topic: text) -> Post {
+  require topic != ""
+
+  researcher("find 3 recent, specific facts about {topic}") -> facts: list<text>
+
+  // verifiability where it matters most: every claim must clear fact_check
+  for f in facts {
+    ensure fact_check(f)
+  }
+
+  writer("write a short social post from these facts: {facts}") -> draft: Post
+
+  // structural guardrails the compiler enforces and the repair loop fixes.
+  // no_em_dashes is a built-in lint that rejects the em dash glyph, so this
+  // file can ban that character without embedding it.
+  ensure draft.body.length <= 280
+  ensure draft.cta != ""
+  ensure no_em_dashes(draft.body)
+  ensure not contains(draft.body, "#")
+
+  return draft
+}
+
+flow post_with_approval(topic: text) -> text {
+  topic_to_post(topic) -> draft
+  review draft -> approved: Post        // pause for a human reviewer
+  publish(approved) -> url
+  return url
+}

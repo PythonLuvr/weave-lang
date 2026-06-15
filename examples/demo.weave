@@ -1,0 +1,42 @@
+// demo.weave
+// The smallest end-to-end Weave program that exercises v0:
+//   require, a soft call returning a list, a for-loop with a tool contract,
+//   a soft call returning a record, the repair loop, built-in lints, return.
+//
+// Run it:  node src/cli.js run examples/demo.weave --topic "granite countertops"
+
+type Post = {
+  body: text
+  cta:  text
+}
+
+tool fact_check(claim: text) -> bool
+
+agent researcher {
+  model: mock
+  retry: 2
+}
+
+agent writer {
+  model:   mock
+  persona: "Brand-true copywriter. No em dashes. Always a CTA."
+  retry:   3
+}
+
+flow topic_to_post(topic: text) -> Post {
+  require topic != ""
+
+  researcher("find 3 facts about {topic}") -> facts: list<text>
+
+  for f in facts {
+    ensure fact_check(f)
+  }
+
+  writer("write a short post from these facts: {facts}") -> draft: Post
+
+  ensure draft.body.length <= 280
+  ensure no_em_dashes(draft.body)
+  ensure draft.cta != ""
+
+  return draft
+}

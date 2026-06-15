@@ -1,0 +1,15 @@
+{
+  "name": "weave-lang",
+  "version": "0.0.1",
+  "description": "A small, verifiable language for orchestrating AI agents.",
+  "type": "module",
+  "bin": {
+    "weave": "src/cli.js"
+  },
+  "scripts": {
+    "test": "node test.mjs",
+    "demo": "node src/cli.js run examples/demo.weave --topic \"granite countertops\"",
+    "check": "node src/cli.js check examples/demo.weave"
+  },
+  "license": "MIT"
+}

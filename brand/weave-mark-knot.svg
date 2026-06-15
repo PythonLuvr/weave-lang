@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Weave interlocked rings mark">
+  <title>Weave interlocked rings (linked threads)</title>
+  <defs>
+    <clipPath id="link-bottom"><circle cx="50" cy="72" r="14"/></clipPath>
+  </defs>
+  <g fill="none" stroke-width="13" stroke-linecap="round">
+    <circle cx="40" cy="50" r="24" stroke="#5B4BE3"/>
+    <circle cx="60" cy="50" r="24" stroke="#FF7E6B"/>
+    <!-- reveal indigo ring over coral at the bottom overlap: interlocked -->
+    <circle cx="40" cy="50" r="24" stroke="#5B4BE3" clip-path="url(#link-bottom)"/>
+  </g>
+</svg>

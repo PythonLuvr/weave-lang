@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Weave mark, single color">
+  <title>Weave mark, single color (over-under shown by gaps)</title>
+  <!-- One ink color. The under-thread breaks at each crossing so the weave still reads. Recolor by editing the stroke hex. -->
+  <g fill="none" stroke="#161235" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 28 L50 72 L58.8 59.1"/>
+    <path d="M71.2 40.9 L80 28"/>
+    <path d="M20 72 L28.8 59.1"/>
+    <path d="M41.2 40.9 L50 28 L80 72"/>
+  </g>
+</svg>

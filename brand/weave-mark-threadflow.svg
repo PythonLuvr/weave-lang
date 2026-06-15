@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Weave threads converging into one flow">
+  <title>Weave threads to flow (many agents, one flow)</title>
+  <g fill="none" stroke-width="9" stroke-linecap="round">
+    <path d="M12 24 C40 24 38 50 60 50" stroke="#5B4BE3"/>
+    <path d="M12 42 C40 42 40 50 60 50" stroke="#FF7E6B"/>
+    <path d="M12 58 C40 58 40 50 60 50" stroke="#5B4BE3"/>
+    <path d="M12 76 C40 76 42 50 60 50" stroke="#FF7E6B"/>
+    <path d="M58 50 L90 50" stroke="#5B4BE3" stroke-width="13"/>
+  </g>
+</svg>

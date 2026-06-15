@@ -1,0 +1,10 @@
+{
+  "name": "weave-brand-tools",
+  "private": true,
+  "type": "module",
+  "description": "Local-only tooling to render Weave brand SVGs to PNG/ICO. Not part of the language package.",
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "png-to-ico": "^2.1.8"
+  }
+}

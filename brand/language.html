@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>weave, the language</title>
+<link rel="icon" href="favicon.svg">
+<style>
+  :root{
+    --indigo:#5B4BE3; --coral:#FF7E6B; --ink:#161235; --mist:#F7F6FD; --line:#E7E3F7;
+    --font:'Poppins','Century Gothic','Segoe UI',system-ui,sans-serif;
+    --mono:'JetBrains Mono','Cascadia Code','Consolas',monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);color:var(--ink);background:var(--mist);line-height:1.55}
+  .wrap{max-width:920px;margin:0 auto;padding:48px 28px 80px}
+  header{display:flex;align-items:center;gap:18px;margin-bottom:8px}
+  header img{width:64px;height:64px}
+  h1{font-size:46px;margin:0;letter-spacing:-1px}
+  .tag{color:#6A6588;font-size:18px;margin:6px 0 0}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:#8A85A8;margin:44px 0 14px}
+  p.lead{font-size:16px;color:#46415f;max-width:680px}
+  pre{background:#14122B;border-radius:16px;padding:26px 28px;overflow:auto;border:1px solid #2A2550;box-shadow:0 8px 30px rgba(20,18,43,.12)}
+  code{font-family:var(--mono);font-size:14.5px;line-height:1.7;white-space:pre;color:#CFCBEA}
+  .cm{color:#6E6A9B;font-style:italic}
+  .st{color:#9BE6A0}
+  .kw{color:#FF8A77;font-weight:600}
+  .kwv{color:#5FE0D0;font-weight:700}
+  .ty{color:#8FB4FF}
+  .tyn{color:#B79CFF}
+  .num{color:#E6B5FF}
+  .arrow{color:#8C7BFF;font-weight:700}
+  .id{color:#E8E6FF}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 0}
+  .chip{font-size:13px;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:#fff}
+  .chip b{color:var(--indigo)}
+  .chip.v b{color:#13B6A3}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:6px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .card .k{font-family:var(--mono);font-size:14px;color:var(--indigo);font-weight:700}
+  .card .d{font-size:13.5px;color:#5b5676;margin-top:5px}
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:13.5px}
+  .stat b{color:var(--ink)}
+  .note{font-size:14px;color:#6A6588;max-width:700px}
+  footer{margin-top:44px;color:#8A85A8;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="weave-mark.svg" alt="weave mark">
+    <div>
+      <h1>weave</h1>
+      <div class="tag">A small, verifiable language for orchestrating AI agents.</div>
+    </div>
+  </header>
+
+  <h2>A whole program</h2>
+  <p class="lead">This is real Weave. It drafts with a live model and refuses to return anything that breaks the rules. Orchestration and verification, in one file.</p>
+  <pre><code class="weave" id="s1"></code></pre>
+  <div class="legend">
+    <span class="chip"><b>blue arrows</b> bind a step's result to a name (orchestration)</span>
+    <span class="chip v"><b>require / ensure</b> are contracts, checked and self-corrected (verification)</span>
+  </div>
+
+  <h2>Five concepts, the whole language</h2>
+  <div class="cards">
+    <div class="card"><div class="k">type</div><div class="d">A shape for data: records, unions, lists. Where contracts attach.</div></div>
+    <div class="card"><div class="k">tool</div><div class="d">A typed door to the outside: an MCP tool, a CLI, an HTTP call, a function.</div></div>
+    <div class="card"><div class="k">agent</div><div class="d">A configured model caller: which model, persona, tools, retry budget.</div></div>
+    <div class="card"><div class="k">flow</div><div class="d">The program. Typed inputs and outputs, a body of steps, contracts.</div></div>
+    <div class="card"><div class="k">soft call</div><div class="d">Calling an agent with a prompt and getting a typed result back.</div></div>
+  </div>
+
+  <h2>The mechanic that makes it worth it</h2>
+  <p class="lead">When a contract fails on a model's output, Weave does not just error. It feeds the violated contract back to the agent and retries. Guardrail and self-correction, in two lines.</p>
+  <pre><code class="weave" id="s2"></code></pre>
+  <p class="note">In a live run, the model's first draft was over 280 characters, the contract caught it, and the retry came back under the limit. The language drove the fix.</p>
+
+  <h2>Why a language for AI even makes sense</h2>
+  <p class="lead">Not because a model writes it more fluently (a new language has no training data, so it cannot). Because it is small enough to teach in a prompt, constrained enough that broken programs cannot be expressed, and strict enough that wrong output is caught the instant it happens. Trust, not fluency.</p>
+
+  <div class="stats">
+    <span class="stat"><b>33</b> tests green</span>
+    <span class="stat"><b>5</b> concepts</span>
+    <span class="stat">runs on <b>Claude</b> or <b>Gemini</b> (no API key)</span>
+    <span class="stat">bind <b>your own tools</b> (MCP, CLIs, HTTP)</span>
+  </div>
+
+  <footer>weave-lang &middot; MIT &middot; <code>node src/cli.js run examples/demo.weave --backend claude --topic "..."</code></footer>
+</div>
+
+<script>
+const S1 = `type Post = {
+  headline: text
+  body:     text
+  cta:      text
+}
+
+tool fact_check(claim: text) -> bool
+
+agent writer {
+  model:   claude
+  persona: "Brand copywriter. No em dashes. No hashtags."
+  retry:   3
+}
+
+flow topic_to_post(topic: text) -> Post {
+  require topic != ""
+
+  writer("Write a short marketing post about {topic}") -> draft: Post
+
+  ensure draft.body.length <= 280     // structural guardrail
+  ensure draft.cta != ""              // always a call to action
+  ensure no_em_dashes(draft.body)     // house style, enforced
+  ensure fact_check(draft.body)       // verify before trusting
+
+  return draft
+}`;
+
+const S2 = `writer("write the post") -> draft
+ensure draft.body.length <= 280
+// model returns 340 chars -> Weave feeds the failed
+// contract back to the agent and retries until it passes.`;
+
+const KW = new Set(['type','tool','agent','flow','for','in','if','else','return','not','list']);
+const KWV = new Set(['require','ensure']);
+const PRIM = new Set(['text','bool','int','num']);
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const isW = c => /[A-Za-z0-9_]/.test(c);
+
+function hl(src){
+  let out='', i=0;
+  const span=(c,t)=> out += `<span class="${c}">${esc(t)}</span>`;
+  while(i<src.length){
+    const c=src[i];
+    if(c==='/'&&src[i+1]==='/'){ let j=src.indexOf('\n',i); if(j<0)j=src.length; span('cm',src.slice(i,j)); i=j; continue; }
+    if(c==='"'){ let j=i+1; while(j<src.length&&src[j]!=='"'){ if(src[j]==='\\')j++; j++; } j++; span('st',src.slice(i,j)); i=j; continue; }
+    if(c==='-'&&src[i+1]==='>'){ span('arrow','->'); i+=2; continue; }
+    if(/[0-9]/.test(c)){ let j=i; while(j<src.length&&/[0-9.]/.test(src[j]))j++; span('num',src.slice(i,j)); i=j; continue; }
+    if(isW(c)){ let j=i; while(j<src.length&&isW(src[j]))j++; const w=src.slice(i,j);
+      if(KWV.has(w)) span('kwv',w);
+      else if(KW.has(w)) span('kw',w);
+      else if(PRIM.has(w)) span('ty',w);
+      else if(/^[A-Z]/.test(w)) span('tyn',w);
+      else span('id',w);
+      i=j; continue;
+    }
+    out += esc(c); i++;
+  }
+  return out;
+}
+
+document.getElementById('s1').innerHTML = hl(S1);
+document.getElementById('s2').innerHTML = hl(S2);
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 150" width="560" height="150" role="img" aria-label="Weave logo lockup">
+  <title>Weave lockup (mark plus wordmark)</title>
+  <defs>
+    <clipPath id="lockup-cross"><circle cx="65" cy="50" r="16"/></clipPath>
+  </defs>
+  <g transform="translate(20,25)">
+    <g fill="none" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 72 L50 28 L80 72" stroke="#FF7E6B"/>
+      <path d="M20 28 L50 72 L80 28" stroke="#5B4BE3"/>
+      <path d="M20 72 L50 28 L80 72" stroke="#FF7E6B" clip-path="url(#lockup-cross)"/>
+    </g>
+  </g>
+  <text x="150" y="100" font-family="'Poppins','Century Gothic','Futura','Segoe UI',system-ui,sans-serif" font-size="86" font-weight="600" letter-spacing="-3" fill="#161235">weave</text>
+</svg>
