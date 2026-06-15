@@ -95,6 +95,8 @@ If the judge fails, its reason is fed back to the writer and it rewrites, so the
 
 ```
 weave teach                 # print the language pack to paste into a model's prompt
+weave grammar               # print a GBNF grammar for constrained decoding
+weave lsp                   # language server (diagnostics, completion, hover) over stdio
 weave check <file.weave>
 weave run   <file.weave> [--backend mock|gemini|claude] [--tools module.mjs] [--budget N] [--param value ...]
 ```

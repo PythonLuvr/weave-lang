@@ -406,7 +406,7 @@ Shipped since the first cut:
 Still deferred:
 
 - Codegen to standalone TS (v0 interprets directly).
-- Constrained-decoding grammar export, and a full language server (the TextMate grammar covers highlighting).
+- A VS Code LSP client wrapper. The language server itself ships at `src/lsp.js` (diagnostics, completion, hover), the GBNF grammar ships via `weave grammar`, and TextMate highlighting is in `editor/`.
 - npm publish: `files` / `bin` are prepared; the actual publish is a manual step.
 
 ---

@@ -3,6 +3,7 @@ import { run } from '../src/interpreter.js';
 import { buildPayload } from '../src/model-util.js';
 import { teachPack } from '../src/teach.js';
 import { gbnf } from '../src/grammar.js';
+import { lspDiagnostics, lspCompletions, describeWord } from '../src/lsp.js';
 import { test, eq, ok, throws } from './harness.mjs';
 
 // A model backend driven by a scripted function.
@@ -241,4 +242,24 @@ test('grammar: GBNF is self-consistent (every referenced rule is defined)', () =
   }
   const undef = [...refs].filter(r => !defined.has(r));
   ok(undef.length === 0, 'undefined GBNF rules: ' + undef.join(', '));
+});
+
+test('lsp: diagnostics flag a parse error with a position', () => {
+  const d = lspDiagnostics('flow f( {');
+  ok(d.length > 0 && /Parse|Lex/.test(d[0].message), JSON.stringify(d));
+});
+
+test('lsp: a clean program has no diagnostics', () => {
+  const d = lspDiagnostics('flow f(t: text) -> text { require t != ""  return t }');
+  eq(d.length, 0);
+});
+
+test('lsp: completions include keywords, builtins, and declared names', () => {
+  const c = lspCompletions('agent writer { model: x }\nflow f() -> text { return "" }').map((x) => x.label);
+  ok(c.includes('ensure') && c.includes('judge') && c.includes('writer'), c.join(','));
+});
+
+test('lsp: hover describes a builtin', () => {
+  const h = describeWord('no_em_dashes', '');
+  ok(h && h.includes('built-in'), String(h));
 });
