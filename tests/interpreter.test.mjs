@@ -2,6 +2,7 @@ import { parse } from '../src/parser.js';
 import { run } from '../src/interpreter.js';
 import { buildPayload } from '../src/model-util.js';
 import { teachPack } from '../src/teach.js';
+import { gbnf } from '../src/grammar.js';
 import { test, eq, ok, throws } from './harness.mjs';
 
 // A model backend driven by a scripted function.
@@ -221,4 +222,23 @@ test('teach: the language pack covers the core constructs', () => {
   for (const kw of ['flow', 'agent', 'tool', 'ensure', 'judge', 'parallel', 'review', 'recall']) {
     ok(teachPack.includes(kw), 'teach pack is missing: ' + kw);
   }
+});
+
+test('grammar: GBNF is self-consistent (every referenced rule is defined)', () => {
+  const defined = new Set();
+  for (const line of gbnf.split('\n')) {
+    const m = line.match(/^([a-zA-Z_]\w*)\s*::=/);
+    if (m) defined.add(m[1]);
+  }
+  ok(defined.has('root'), 'no root rule');
+  const refs = new Set();
+  for (const line of gbnf.split('\n')) {
+    const idx = line.indexOf('::=');
+    const body = (idx >= 0 ? line.slice(idx + 3) : line)
+      .replace(/"(?:[^"\\]|\\.)*"/g, ' ')
+      .replace(/\[[^\]]*\]/g, ' ');
+    for (const t of body.match(/[a-zA-Z_]\w*/g) || []) refs.add(t);
+  }
+  const undef = [...refs].filter(r => !defined.has(r));
+  ok(undef.length === 0, 'undefined GBNF rules: ' + undef.join(', '));
 });
