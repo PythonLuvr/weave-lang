@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1060px; height:830px; background:#0F0E20; font-family:'JetBrains Mono',monospace; }
+  .pad { padding:40px; }
+  .term { width:980px; background:#14122B; border:1px solid #2C2858; border-radius:16px; box-shadow:0 30px 90px rgba(0,0,0,.55); overflow:hidden; }
+  .bar { display:flex; align-items:center; gap:10px; padding:16px 20px; background:#1B1840; border-bottom:1px solid #2C2858; }
+  .dot { width:13px; height:13px; border-radius:50%; }
+  .d1{background:#FF6B5E}.d2{background:#FFC24B}.d3{background:#5FE0D0}
+  .title { margin-left:12px; color:#8E89BC; font-size:18px; }
+  .body { padding:26px 30px; font-size:21px; line-height:1.72; color:#CFCBEA; white-space:pre; }
+  .pr { color:#5FE0D0; font-weight:700; }
+  .cmd { color:#FFFFFF; font-weight:600; }
+  .mut { color:#8E89BC; }
+  .pass { color:#5FE0D0; font-weight:700; }
+  .fail { color:#FF6B5E; font-weight:700; }
+  .rep { color:#9A8BFF; font-weight:600; }
+  .kw { color:#FF8A77; }
+  .ar { color:#9A8BFF; font-weight:700; }
+</style>
+</head>
+<body>
+<div class="pad">
+  <div class="term">
+    <div class="bar"><span class="dot d1"></span><span class="dot d2"></span><span class="dot d3"></span><span class="title">weave</span></div>
+    <div class="body"><span class="pr">$</span> <span class="cmd">weave check examples/demo.weave</span>
+<span class="mut">OK: demo.weave checks clean (5 declarations).</span>
+
+<span class="pr">$</span> <span class="cmd">weave run examples/demo.weave --backend claude --topic "quartz"</span>
+  <span class="kw">require</span> topic != ""                    <span class="pass">PASS</span>
+  <span class="kw">soft</span>  researcher(...) <span class="ar">-&gt;</span> facts
+  <span class="kw">for</span> f <span class="kw">in</span> facts  (3 items)
+    <span class="kw">ensure</span> fact_check(f)                 <span class="pass">PASS</span>
+  <span class="kw">soft</span>  writer(...) <span class="ar">-&gt;</span> draft   [attempt 1]
+    <span class="kw">ensure</span> draft.body.length &lt;= 280      <span class="fail">FAIL</span>
+    <span class="rep">repair  -&gt;  contract sent back to writer, retrying</span>
+  <span class="kw">soft</span>  writer(...) <span class="ar">-&gt;</span> draft   [attempt 2]
+    <span class="kw">ensure</span> draft.body.length &lt;= 280      <span class="pass">PASS</span>
+    <span class="kw">ensure</span> no_em_dashes(draft.body)       <span class="pass">PASS</span>
+    <span class="kw">ensure</span> draft.cta != ""                <span class="pass">PASS</span>
+  <span class="mut">RESULT  { headline, body, cta }  ✓ on-brand, verified</span></div>
+  </div>
+</div>
+</body>
+</html>
