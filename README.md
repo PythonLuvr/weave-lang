@@ -94,8 +94,9 @@ If the judge fails, its reason is fed back to the writer and it rewrites, so the
 ## Commands
 
 ```
+weave teach                 # print the language pack to paste into a model's prompt
 weave check <file.weave>
-weave run   <file.weave> [--backend mock|gemini|claude] [--tools module.mjs] [--param value ...]
+weave run   <file.weave> [--backend mock|gemini|claude] [--tools module.mjs] [--budget N] [--param value ...]
 ```
 
 - `--backend mock` (default): deterministic stub, runs free for testing language mechanics.

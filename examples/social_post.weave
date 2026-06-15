@@ -12,7 +12,7 @@ tool fact_check(claim: text)  -> bool
 tool publish(post: Post)      -> text          // returns the published URL
 
 agent researcher {
-  model:  gemini-flash
+  model:  "gemini-flash"
   tools:  [web_search]
   memory: session
   retry:  2

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Weave",
+  "scopeName": "source.weave",
+  "fileTypes": ["weave"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#builtins" },
+    { "include": "#types" },
+    { "include": "#typenames" },
+    { "include": "#numbers" },
+    { "include": "#operators" }
+  ],
+  "repository": {
+    "comments": { "match": "//.*$", "name": "comment.line.double-slash.weave" },
+    "strings": {
+      "begin": "\"",
+      "end": "\"",
+      "name": "string.quoted.double.weave",
+      "patterns": [
+        { "match": "\\{[A-Za-z_][A-Za-z0-9_.]*\\}", "name": "variable.other.interpolation.weave" }
+      ]
+    },
+    "keywords": { "match": "\\b(type|tool|agent|flow|require|ensure|for|in|if|else|return|review|parallel|not)\\b", "name": "keyword.control.weave" },
+    "builtins": { "match": "\\b(judge|contains|starts_with|ends_with|no_em_dashes|no_hashtags|recall|remember)\\b", "name": "support.function.weave" },
+    "types": { "match": "\\b(text|int|num|bool|list)\\b", "name": "support.type.weave" },
+    "typenames": { "match": "\\b([A-Z][A-Za-z0-9_]*)\\b", "name": "entity.name.type.weave" },
+    "numbers": { "match": "\\b[0-9]+(\\.[0-9]+)?\\b", "name": "constant.numeric.weave" },
+    "operators": { "match": "->|==|!=|<=|>=|&&|\\|\\||[<>=]", "name": "keyword.operator.weave" }
+  }
+}

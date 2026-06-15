@@ -401,12 +401,13 @@ Shipped since the first cut:
 
 - Real model backends (Claude / Gemini via their CLIs, no API key).
 - Judge contracts (semantic checks), tool-use (ReAct loop), `parallel`, `review` gates, budgets, and memory (`session` plus `recall` / `remember`).
+- `weave teach` (the in-context language pack), an eval harness (`eval.mjs`), and editor syntax highlighting (`editor/`, a TextMate grammar).
 
 Still deferred:
 
 - Codegen to standalone TS (v0 interprets directly).
-- Constrained-decoding grammar export and `weave teach`.
-- The eval harness, an LSP, and an npm publish.
+- Constrained-decoding grammar export, and a full language server (the TextMate grammar covers highlighting).
+- npm publish: `files` / `bin` are prepared; the actual publish is a manual step.
 
 ---
 

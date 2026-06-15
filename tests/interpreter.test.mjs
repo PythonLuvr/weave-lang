@@ -1,6 +1,7 @@
 import { parse } from '../src/parser.js';
 import { run } from '../src/interpreter.js';
 import { buildPayload } from '../src/model-util.js';
+import { teachPack } from '../src/teach.js';
 import { test, eq, ok, throws } from './harness.mjs';
 
 // A model backend driven by a scripted function.
@@ -214,4 +215,10 @@ test('interp: remember then recall round-trips via the store', async () => {
     `flow f() -> text { remember("k", "saved value") -> w: bool  recall("k") -> v: text  return v }`,
     'f', [], { model: m, memory: store });
   eq(out, 'saved value');
+});
+
+test('teach: the language pack covers the core constructs', () => {
+  for (const kw of ['flow', 'agent', 'tool', 'ensure', 'judge', 'parallel', 'review', 'recall']) {
+    ok(teachPack.includes(kw), 'teach pack is missing: ' + kw);
+  }
 });

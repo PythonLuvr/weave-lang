@@ -17,8 +17,11 @@ import { createGeminiCliModel } from './models-gemini.js';
 import { createClaudeCliModel } from './models-claude.js';
 import { pathToFileURL } from 'url';
 import { resolve } from 'path';
+import { teachPack } from './teach.js';
 
 const [, , cmd, file, ...rest] = process.argv;
+
+if (cmd === 'teach') { console.log(teachPack); process.exit(0); }
 
 const flags = {};
 for (let i = 0; i < rest.length; i++) {
@@ -27,6 +30,7 @@ for (let i = 0; i < rest.length; i++) {
 
 if (!cmd || !file || (cmd !== 'run' && cmd !== 'check')) {
   console.log('usage:');
+  console.log('  weave teach');
   console.log('  weave check <file.weave>');
   console.log('  weave run   <file.weave> [--backend mock|gemini|claude] [--tools module.mjs] [--budget N] [--entry flowName] [--param value ...]');
   process.exit(1);

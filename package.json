@@ -11,5 +11,7 @@
     "demo": "node src/cli.js run examples/demo.weave --topic \"granite countertops\"",
     "check": "node src/cli.js check examples/demo.weave"
   },
+  "files": ["src", "examples", "README.md", "LICENSE"],
+  "keywords": ["dsl", "ai-agents", "agent-orchestration", "llm", "verification", "contracts"],
   "license": "MIT"
 }
