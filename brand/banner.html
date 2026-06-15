@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1280px; height:640px; overflow:hidden; background:#0F0E20; color:#EAE8FB; font-family:'Inter',sans-serif; }
+  .wrap { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .glow { position:absolute; width:780px; height:780px; border-radius:50%; filter:blur(150px); opacity:.22; }
+  .g1 { background:#5B4BE3; top:-260px; left:-170px; }
+  .g2 { background:#FF7E6B; bottom:-300px; right:-190px; }
+  .mark { width:134px; height:134px; }
+  .word { font-family:'Poppins',sans-serif; font-weight:800; font-size:124px; letter-spacing:-5px; margin-top:8px; line-height:1; }
+  .tag { font-size:33px; color:#9C97C8; margin-top:16px; }
+  .chips { margin-top:32px; font-family:'JetBrains Mono',monospace; font-size:23px; color:#7E79AE; letter-spacing:.4px; }
+  .chips b { color:#8C7BFF; font-weight:600; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+    <svg class="mark" viewBox="0 0 100 100" fill="none">
+      <g stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 72 L50 28 L80 72" stroke="#FF7E6B"/>
+        <path d="M20 28 L50 72 L80 28" stroke="#6D5CFF"/>
+      </g>
+    </svg>
+    <div class="word">weave</div>
+    <div class="tag">A small, verifiable language for orchestrating AI agents.</div>
+    <div class="chips">contracts that self-correct &nbsp;&middot;&nbsp; runs on <b>Claude</b> or <b>Gemini</b> &nbsp;&middot;&nbsp; MIT</div>
+  </div>
+</body>
+</html>

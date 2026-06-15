@@ -1,6 +1,15 @@
-# Weave
+<p align="center">
+  <img src="brand/export/weave-icon-512.png" alt="Weave" width="116">
+</p>
 
-A small, verifiable language for orchestrating AI agents.
+<h1 align="center">Weave</h1>
+
+<p align="center">A small, verifiable language for orchestrating AI agents.</p>
+
+<p align="center">
+  <a href="brand/weave-trailer.mp4"><img src="brand/trailer-poster.png" alt="Watch the 18-second intro" width="680"></a><br>
+  <sub><a href="brand/weave-trailer.mp4">▶ watch the 18-second intro</a></sub>
+</p>
 
 ![A Weave program](brand/screens/language-hero.png)
 
